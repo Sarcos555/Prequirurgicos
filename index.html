@@ -44,7 +44,7 @@ input:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid
 nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--hd);padding-bottom:env(safe-area-inset-bottom);z-index:6}
 nav button{flex:1;padding:15px 4px;border:0;background:none;color:#9FC3CF;font-weight:600}
 nav button[aria-selected=true]{color:#fff;box-shadow:inset 0 3px #34B6C6}
-@media print{header,nav,.no{display:none!important}body{background:#fff;color:#000}}
+.ck{display:flex;gap:8px;align-items:center}.ck input{width:auto;min-height:0;margin:0}.cfr{border-top:1px solid var(--ln);padding:8px 0}.cf{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.cf label{font-size:11px;color:var(--mu);margin:0}.cf input{padding:8px;min-height:40px}@media print{header,nav,.no{display:none!important}body{background:#fff;color:#000}}
 </style></head><body>
 <header><div><h1>Prequirúrgicos</h1><small>Laboratorio prequirúrgico</small></div>
 <svg viewBox="0 0 84 30" aria-hidden="true"><path d="M0 17h18l5-13 8 25 6-12h47" fill="none" stroke="#34B6C6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></header>
@@ -67,31 +67,25 @@ nav button[aria-selected=true]{color:#fff;box-shadow:inset 0 3px #34B6C6}
 
 <section id="t2" hidden><div class="card"><div id="rep"></div></div>
 <div class="no"><button class="btn pr" id="cp">Copiar</button><button class="btn" id="sh">Compartir</button><button class="btn" id="pr">Imprimir / PDF</button></div></section>
+<section id="t3" hidden></section>
 </main>
-<nav role="tablist"><button role="tab" aria-selected="true" data-t="0">Datos</button><button role="tab" aria-selected="false" data-t="1">Análisis</button><button role="tab" aria-selected="false" data-t="2">Informe</button></nav>
+<nav role="tablist"><button role="tab" aria-selected="true" data-t="0">Datos</button><button role="tab" aria-selected="false" data-t="1">Análisis</button><button role="tab" aria-selected="false" data-t="2">Informe</button><button role="tab" aria-selected="false" data-t="3">Ajustes</button></nav>
 
 <script>
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const G=['Hemograma completo','Coagulograma','Glucemia','Urea','Creatinina total','Grupo y factor Rh','Hepatograma completo','Albúmina en sangre','Ionograma completo','Serología HIV','Serología hepatitis B','Serología hepatitis C','β-hCG cualitativa (subunidad beta)','TSH'];
-// [id, nombre, unidad, grupo, mín, máx, crítico bajo, crítico alto, opciones (cualitativo), 'i' = solo informativo]
+const G=['Hemograma completo','Coagulograma','Glucemia, uremia y creatinina','Ionograma en sangre','Hepatograma completo','Colesterol total','TSH','β-hCG (subunidad beta)','HIV'];
+// [id, nombre, unidad, grupo, mín, máx, crítico bajo, crítico alto, —, 'r' = negativo / dudoso / positivo]
 const P=[
-['gr','Eritrocitos','x10⁶/µL',0,[4.5,4],[5.9,5.2]],['hb','Hemoglobina','g/dL',0,[13.5,12],[17.5,15.5],7,20],['hto','Hematocrito','%',0,[41,36],[53,46],20,60],
-['vcm','VCM','fL',0,80,100],['hcm','HCM','pg',0,27,33],['leu','Leucocitos','x10³/µL',0,4,11,2,30],
-['neu','Neutrófilos','%',0,40,75],['linf','Linfocitos','%',0,20,45],['mono','Monocitos','%',0,2,10],['eos','Eosinófilos','%',0,1,6],['bas','Basófilos','%',0,0,1],
-['plq','Plaquetas','x10³/µL',0,150,400,20,1000],
-['tp','Actividad de protrombina','%',1,70,120,30],['inr','INR','',1,.8,1.2,,5],['kptt','KPTT','seg',1,25,37,,70],['fib','Fibrinógeno','mg/dL',1,200,400,100],
-['glu','Glucemia','mg/dL',2,70,100,50,500],['urea','Urea','mg/dL',3,15,45,,200],['crea','Creatinina','mg/dL',4,[.7,.6],[1.3,1.1],,5],
-['abo','Grupo sanguíneo','',5,,,,,['A','B','AB','O'],'i'],['rh','Factor Rh','',5,,,,,['Positivo','Negativo'],'i'],
-['ast','AST (TGO)','U/L',6,10,40,,1000],['alt','ALT (TGP)','U/L',6,7,40,,1000],['fa','Fosfatasa alcalina','U/L',6,40,130],['ggt','GGT','U/L',6,[10,6],[71,42]],
-['bil','Bilirrubina total','mg/dL',6,.2,1.2,,15],['bild','Bilirrubina directa','mg/dL',6,0,.3],['prot','Proteínas totales','g/dL',6,6,8.3],
-['alb','Albúmina','g/dL',7,3.5,5,2],
-['na','Sodio','mEq/L',8,135,145,120,160],['k','Potasio','mEq/L',8,3.5,5.1,2.5,6.5],['cl','Cloro','mEq/L',8,98,107],['ca','Calcio total','mg/dL',8,8.5,10.5,6.5,13],['mg','Magnesio','mg/dL',8,1.7,2.4,1,5],
-['hiv','VIH (Ag/Ac)','',9,,,,,['No reactivo','Reactivo']],
-['hbsag','HBsAg (antígeno de superficie)','',10,,,,,['No reactivo','Reactivo']],['ahbs','Anti-HBs (anticuerpos)','',10,,,,,['No reactivo','Reactivo'],'i'],['ahbc','Anti-HBc total','',10,,,,,['No reactivo','Reactivo']],
-['ahcv','Anti-VHC (anticuerpos)','',11,,,,,['No reactivo','Reactivo']],
-['hcg','β-hCG cualitativa','',12,,,,,['Negativa','Positiva']],
-['tsh','TSH','mUI/L',13,.4,4]];
+['hto','Hematocrito','%',0,37.8,47.4,20,60],['hb','Hemoglobina','g/dL',0,12.5,15.3,7,20],['gr','Hematíes','x10⁶/µL',0,4.11,5.18],
+['leu','Glóbulos blancos','x10³/µL',0,4.32,10.69,2,30],['neu','Neutrófilos segmentados','%',0,39.7,69.1],['eos','Eosinófilos','%',0,.6,8.9],['bas','Basófilos','%',0,0,1.2],['linf','Linfocitos','%',0,21.8,46.7],['mono','Monocitos','%',0,5.2,12.4],
+['vcm','MCV (VCM)','fL',0,84.5,99.7],['hcm','HCM','pg',0,27.2,32.4],['chcm','CHCM','g/dL',0,31.3,34.2],['rdw','RDW','%',0,11.4,14],['plq','Recuento de plaquetas','x10³/µL',0,163,382,20,1000],
+['tp','Tiempo de protrombina (actividad)','%',1,70,120,30],['inr','RIN (INR)','',1,.8,1.2,,5],['kptt','APTT','seg',1,27,39,,70],
+['glu','Glucemia','mg/dL',2,60,110,50,500],['urea','Uremia','mg/dL',2,15,50,,200],['crea','Creatinina','mg/dL',2,.6,1.3,,5],
+['na','Sodio plasmático','mEq/L',3,135,145,120,160],['k','Potasio plasmático','mEq/L',3,3.5,5,2.5,6.5],['cl','Cloro sérico','mEq/L',3,98,109],
+['bil','Bilirrubina total','mg/dL',4,.2,1,,15],['bild','Bilirrubina directa','mg/dL',4,.1,.5],['fa','Fosfatasa alcalina plasmática','U/L',4,40,150],['ast','TGO (AST)','U/L',4,5,34,,1000],['alt','TGP (ALT)','U/L',4,0,55,,1000],
+['col','Colesterol total','mg/dL',5,0,200],['tsh','TSH','mUI/L',6,.35,4.94],
+['hcg','β-hCG (subunidad beta)','mUI/mL',7,0,5,,25,,'r'],['hiv','HIV (índice)','índice',8,0,1,,,,'r']];
 const PM=Object.fromEntries(P.map(p=>[p[0],p]));
 // T[id][h|l] = [fisiopatología, causas y diferenciales, criterios de enfermería]
 const T={
@@ -144,15 +138,23 @@ hbsag:{a:["Antígeno de superficie del VHB: infección activa (aguda o crónica)
 ahbc:{a:["Anti-core total: contacto previo o actual con el VHB.","Infección pasada resuelta, infección crónica, infección oculta o ventana inmunológica."]},
 ahcv:{a:["Anticuerpos contra el VHC: contacto con el virus.","Hepatitis C actual o curada; posible falso positivo. Confirmar con ARN-VHC.","Precauciones estándar; informar al médico; confirmación virológica."]},
 hcg:{a:["β-hCG presente: embarazo (o, rara vez, otras causas).","Embarazo (incluido el ectópico), enfermedad trofoblástica, falso positivo.","ALERTA prequirúrgica: informar de inmediato al equipo quirúrgico y de anestesia antes de cirugía, radiación o fármacos teratogénicos."]}});
+Object.assign(T,{chcm:{l:["Hipocromía: menor concentración de hemoglobina en el eritrocito.","Ferropenia, talasemia, anemia de enfermedad crónica."],h:["CHCM elevada: infrecuente; suele reflejar esferocitosis o artefacto.","Esferocitosis hereditaria, hemólisis autoinmune, aglutininas frías, lipemia o hemólisis de la muestra."]},rdw:{h:["Anisocitosis: gran variabilidad del tamaño de los eritrocitos.","Ferropenia, déficit de B12/folato, anemia mixta, reticulocitosis, transfusión reciente, hemoglobinopatías."]}});
+Object.assign(T.eos,{l:["Eosinopenia: respuesta al estrés agudo o a corticoides.","Estrés agudo, infección aguda, corticoides, síndrome de Cushing."]});
+Object.assign(T.mono,{l:["Monocitopenia: infrecuente.","Aplasia o falla medular, infecciones graves, corticoides, tricoleucemia."]});
+Object.assign(T.hcg,{d:["β-hCG en zona indeterminada (entre el límite negativo y el positivo).","Embarazo muy incipiente, falso positivo, embarazo ectópico o fallido, perimenopausia, ciertos tumores.","Informar al equipo antes del procedimiento; repetir en 48–72 h según indicación."]});
 const st={sex:'M',vals:{}};
-const pick=x=>Array.isArray(x)?x[st.sex==='F'?1:0]:x;
-const rng=p=>{if(p[8])return p[9]==='i'?'informativo':'Esperado: '+p[8][0];const lo=pick(p[4]),hi=pick(p[5]);return(lo===0?'< '+hi:lo+'–'+hi)+' '+p[2]};
-function clf(p,v){if(p[8])return p[9]==='i'?'i':v===1?'a':'n';const lo=pick(p[4]),hi=pick(p[5]);
- if(p[7]!=null&&v>=p[7]&&v>hi)return'ch';if(p[6]!=null&&v<=p[6])return'cl';return v>hi?'h':v<lo?'l':'n'}
-const LB={n:'Normal',h:'Elevado',l:'Disminuido',ch:'Crítico alto',cl:'Crítico bajo',i:'Informativo'},K=c=>c[0]==='c'||c==='a'?'c':c;
-const lab=e=>e.p[8]?e.p[8][e.v]:LB[e.c],val=e=>e.p[8]?e.p[8][e.v]:e.v+' '+e.p[2];
-const info=e=>(T[e.p[0]]||{})[e.c==='a'?'a':e.c.endsWith('h')?'h':'l']||[];
-$('#rows').innerHTML=G.map((g,i)=>`<h3>${g}</h3>`+P.filter(p=>p[3]===i).map(p=>`<div class="p" data-id="${p[0]}"><div><b>${p[1]}</b><div class="mu" data-r></div></div>${p[8]?`<select aria-label="${p[1]}"><option value="">—</option>${p[8].map((o,j)=>`<option value="${j}">${o}</option>`).join('')}</select>`:`<input inputmode="decimal" autocomplete="off" aria-label="${p[1]}" placeholder="—">`}<div class="cw"></div></div>`).join('')).join('');
+const CFG={ov:{},hid:{}};try{Object.assign(CFG,JSON.parse(localStorage.getItem('prequirurgicos-cfg-v3')||'{}'))}catch(e){}
+const saveCfg=()=>{try{localStorage.setItem('prequirurgicos-cfg-v3',JSON.stringify(CFG))}catch(e){}};
+const pickI=(x,i)=>Array.isArray(x)?x[i]:x,nn=x=>x==null?null:x,sx=p=>Array.isArray(p[4])||Array.isArray(p[5]),vis=p=>!CFG.hid[p[0]];
+const lim=(p,i=st.sex==='F'?1:0)=>{const o=CFG.ov[p[0]];return o?{lo:o.lo[i],hi:o.hi[i],cl:o.cl[i],ch:o.ch[i]}:{lo:pickI(p[4],i),hi:pickI(p[5],i),cl:nn(p[6]),ch:nn(p[7])}};
+const rng=p=>{const{lo,hi,ch}=lim(p);if(p[9]==='r')return'neg. < '+hi+(ch!=null?' · dudoso '+hi+'–'+ch+' · pos. > '+ch:'')+' '+p[2];return(lo===0?'< '+hi:lo+'–'+hi)+' '+p[2]};
+function clf(p,v){const{lo,hi,cl,ch}=lim(p);if(p[9]==='r')return v<hi?'n':(ch!=null&&v<=ch)?'d':'a';
+ if(ch!=null&&v>=ch&&v>hi)return'ch';if(cl!=null&&v<=cl)return'cl';return v>hi?'h':v<lo?'l':'n'}
+const LB={n:'Normal',h:'Elevado',l:'Disminuido',ch:'Crítico alto',cl:'Crítico bajo',i:'Informativo',d:'Dudoso'},K=c=>c[0]==='c'||c==='a'?'c':c==='d'?'h':c;
+const lab=e=>e.p[9]==='r'?{n:'Negativo',d:'Dudoso',a:e.p[0]==='hiv'?'Reactivo':'Positivo'}[e.c]:LB[e.c],val=e=>e.v+' '+e.p[2];
+const info=e=>(T[e.p[0]]||{})[e.c==='a'||e.c==='d'?e.c:e.c.endsWith('h')?'h':'l']||[];
+function drawRows(){$('#rows').innerHTML=G.map((g,i)=>{const L=P.filter(p=>p[3]===i&&vis(p));return L.length?`<h3>${g}</h3>`+L.map(p=>`<div class="p" data-id="${p[0]}"><div><b>${p[1]}</b><div class="mu" data-r></div></div>${p[8]?`<select aria-label="${p[1]}"><option value="">—</option>${p[8].map((o,j)=>`<option value="${j}">${o}</option>`).join('')}</select>`:`<input inputmode="decimal" autocomplete="off" aria-label="${p[1]}" placeholder="—">`}<div class="cw"></div></div>`).join(''):''}).join('')||'<p class="mu">No hay parámetros seleccionados. Actívalos en Ajustes.</p>';
+ $$('.p').forEach(r=>{const v=st.vals[r.dataset.id];if(v!=null)r.querySelector('input,select').value=v});upd()}
 function upd(){$$('.p').forEach(r=>{const p=PM[r.dataset.id],v=st.vals[p[0]],c=v==null?'':clf(p,v);
  r.querySelector('[data-r]').textContent=(p[8]?'':'Ref. ')+rng(p);r.querySelector('.cw').innerHTML=c?`<span class="chip ${K(c)}">${lab({p,v,c})}</span>`:''})}
 const onIn=e=>{const r=e.target.closest('.p');if(!r)return;const t=e.target,n=t.tagName==='SELECT'?(t.value===''?NaN:+t.value):parseFloat(t.value.replace(',','.'));
@@ -164,34 +166,34 @@ $('#fi').onchange=e=>{[...e.target.files].forEach(f=>{const u=URL.createObjectUR
  $('#fl').insertAdjacentHTML('beforeend',f.type.startsWith('image/')?`<a href="${u}" target="_blank"><img src="${u}" alt="Resultado adjunto"></a>`:`<a class="doc" href="${u}" target="_blank">PDF · ${esc(f.name)}</a>`)});e.target.value=''};
 $('#rs').onclick=()=>{if(!confirm('¿Borrar todos los datos ingresados?'))return;st.vals={};$$('.p input,.p select,#cod,#age').forEach(i=>i.value='');$('#fl').innerHTML='';upd()};
 
-function insights(S){const I=[],H=i=>S[i]&&S[i].endsWith('h'),L=i=>S[i]&&S[i].endsWith('l'),v=i=>st.vals[i],R=i=>v(i)===1,E=i=>v(i)!=null,a=(t,d)=>I.push([t,d]);
- if(L('hb')||L('hto'))a('Anemia preoperatoria',(L('vcm')?'Microcítica: sugiere ferropenia, talasemia o enfermedad crónica. ':H('vcm')?'Macrocítica: considerar déficit de B12/folato, alcohol, hepatopatía o hipotiroidismo. ':'Normocítica: considerar hemorragia, hemólisis, ERC o inflamación crónica. ')+'Aumenta la probabilidad de transfusión: informar al equipo quirúrgico y de anestesia y estudiar la causa (ferritina, reticulocitos) antes de una cirugía electiva.');
+function insights(S){const I=[],H=i=>S[i]&&S[i].endsWith('h'),L=i=>S[i]&&S[i].endsWith('l'),v=i=>st.vals[i],R=i=>S[i]==='a',a=(t,d)=>I.push([t,d]);
+ if(L('hb')||L('hto')||L('gr'))a('Anemia preoperatoria',(L('vcm')?'Microcítica: sugiere ferropenia, talasemia o enfermedad crónica. ':H('vcm')?'Macrocítica: considerar déficit de B12/folato, alcohol, hepatopatía o hipotiroidismo. ':'Normocítica: considerar hemorragia, hemólisis, ERC o inflamación crónica. ')+(L('hcm')||L('chcm')?'Hipocromía (HCM/CHCM bajas): apoya ferropenia o talasemia. ':'')+(H('rdw')?'RDW alto (anisocitosis): orienta a ferropenia o déficit carencial; con microcitosis y RDW normal pensar en talasemia. ':'')+'Aumenta la probabilidad de transfusión: informar al equipo quirúrgico y de anestesia y estudiar la causa (ferritina, reticulocitos) antes de una cirugía electiva.');
+ else if(H('rdw'))a('RDW elevado','Anisocitosis sin anemia: puede ser un déficit nutricional incipiente (hierro, B12, folato); correlacionar con el VCM y la clínica.');
+ if(H('hb')||H('hto'))a('Hemoglobina o hematocrito elevados','Posible hemoconcentración (deshidratación) o poliglobulia (tabaquismo, hipoxia crónica): mayor viscosidad y riesgo trombótico; valorar con el médico.');
  if(H('leu')&&H('neu'))a('Leucocitosis con neutrofilia','Posible infección o inflamación activa (también estrés o corticoides). Valorar con el equipo si conviene posponer una cirugía electiva.');
  if(L('leu'))a('Leucopenia','Mayor riesgo infeccioso: causas virales, fármacos, déficit nutricional o falla medular. Informar al médico.');
- if(L('plq')||H('inr')||H('kptt')||L('tp')||L('fib')){const f=[L('plq')&&'plaquetas bajas',L('tp')&&'actividad de protrombina baja',H('inr')&&'INR prolongado',H('kptt')&&'KPTT prolongado',L('fib')&&'fibrinógeno bajo'].filter(Boolean);
-  a('Coagulación alterada',f.join(', ')+'. Riesgo hemorrágico quirúrgico. Revisar anticoagulantes y antiagregantes, hepatopatía y déficit de vitamina K; consultar hematología o anestesia antes de operar.'+(H('kptt')&&!H('inr')?' KPTT aislado: considerar heparina, hemofilia, von Willebrand o anticoagulante lúpico.':''))}
+ if(H('eos'))a('Eosinofilia','Orienta a alergia, asma, parasitosis o fármacos; interrogar alergias (fármacos, látex) antes de la anestesia.');
+ if(L('linf'))a('Linfopenia','Frecuente en infecciones virales, estrés agudo o corticoides; correlacionar con la clínica.');
+ if(L('plq')||L('tp')||H('inr')||H('kptt')){const f=[L('plq')&&'plaquetas bajas',L('tp')&&'actividad de protrombina baja',H('inr')&&'RIN prolongado',H('kptt')&&'APTT prolongado'].filter(Boolean);
+  a('Coagulación alterada',f.join(', ')+'. Riesgo hemorrágico quirúrgico. Revisar anticoagulantes y antiagregantes, hepatopatía y déficit de vitamina K; consultar hematología o anestesia antes de operar.'+(H('kptt')&&!H('inr')?' APTT aislado: considerar heparina, hemofilia, von Willebrand o anticoagulante lúpico.':''))}
+ if(H('plq'))a('Trombocitosis','Reactiva (inflamación, ferropenia, esplenectomía) o clonal: riesgo trombótico; valorar con el médico.');
  if(H('glu'))a('Hiperglucemia','Aumenta el riesgo de infección de herida y mala cicatrización. Confirmar ayuno, solicitar HbA1c si no hay diagnóstico y definir el control glucémico perioperatorio.');
  if(L('glu'))a('Hipoglucemia','Verificar ayuno prolongado y tratamiento hipoglucemiante; tratar según protocolo antes del procedimiento.');
  if(H('crea')||H('urea')){const r=v('urea')/v('crea');a('Función renal alterada',(r>50?'Relación urea/creatinina alta ('+r.toFixed(0)+'): predomina un componente prerrenal (deshidratación, hipoperfusión, sangrado digestivo). ':'Sugiere lesión renal aguda o enfermedad renal crónica; diferenciar causa prerrenal, intrínseca y obstructiva. ')+'Condiciona fármacos, contrastes y líquidos perioperatorios; correlacionar con diuresis y valores previos.')}
  if(H('k')&&H('crea'))a('Hiperpotasemia con creatinina elevada','Posible origen renal. Riesgo de arritmia: ECG y descartar hemólisis de la muestra.');
- if(H('k')||L('k')||H('na')||L('na')||L('mg')||L('ca')||H('ca'))a('Alteración electrolítica','Aumenta el riesgo de arritmias y complicaciones anestésicas; corregir y repetir antes de la cirugía según criterio médico.');
+ if(H('k')||L('k')||H('na')||L('na')||H('cl')||L('cl'))a('Alteración electrolítica','Aumenta el riesgo de arritmias y complicaciones anestésicas; corregir y repetir antes de la cirugía según criterio médico.');
  if(L('na')&&H('glu'))a('Hiponatremia con hiperglucemia','Parte puede ser dilucional; sodio corregido ≈ '+(v('na')+1.6*(v('glu')-100)/100).toFixed(0)+' mEq/L.');
- if(H('ast')||H('alt')){const r=v('ast')/v('alt');a('Patrón hepatocelular',(r>2?'AST/ALT >2 ('+r.toFixed(1)+'): sugiere hepatopatía alcohólica o daño avanzado; considerar también músculo o corazón. ':H('alt')?'Predomio de ALT: considerar hepatitis viral, esteatosis (MASLD), fármacos o autoinmunidad. ':'AST elevada aislada: considerar también músculo, corazón o hemólisis. ')+'Revisar alcohol y medicación hepatotóxica.')}
- if(H('fa')&&(H('bil')||H('bild')||H('ggt')))a('Patrón colestásico','FA con GGT o bilirrubina elevadas: obstrucción biliar (litiasis, tumor) o colestasis intrahepática. Valorar dolor, ictericia, acolia y coluria; la ecografía queda a criterio médico.');
- if((H('ast')||H('alt')||H('bil'))&&(L('tp')||H('inr')||L('alb')))a('Posible disfunción hepática con repercusión en la síntesis','Transaminasas o bilirrubina alteradas junto con coagulación o albúmina alteradas: riesgo quirúrgico aumentado; valorar hepatopatía y su estadio con el médico.');
- if(L('alb'))a('Hipoalbuminemia','Se asocia a peor cicatrización y mayor morbilidad posquirúrgica; valorar estado nutricional, función hepática y pérdidas renales o intestinales.');
- if(v('ca')!=null&&v('alb')!=null&&v('alb')<4)a('Calcio corregido por albúmina','≈ '+(v('ca')+.8*(4-v('alb'))).toFixed(1)+' mg/dL; interpretar el calcio con este valor.');
- if(R('hiv'))a('VIH reactivo','Es una prueba de tamizaje: requiere confirmación (prueba complementaria y carga viral). Mantener la confidencialidad, aplicar precauciones estándar y comunicar con asesoramiento adecuado.');
- if(R('hbsag'))a('HBsAg reactivo: infección por VHB','Hepatitis B aguda o crónica. Solicitar carga viral y estudio hepático; valoración por hepatología o infectología; precauciones estándar e información al equipo.');
- else if(E('hbsag')&&E('ahbs')&&E('ahbc')){const s=R('ahbs'),c=R('ahbc');a('Perfil de hepatitis B',s&&!c?'Anti-HBs reactivo sin anti-core: inmunidad por vacunación.':s&&c?'Anti-HBs y anti-core reactivos con HBsAg negativo: infección pasada resuelta (inmunidad natural).':c?'Anti-core aislado: ventana inmunológica, infección oculta o infección antigua con anti-HBs bajo; consultar al médico.':'Todos negativos: sin inmunidad ni infección; considerar vacunación.')}
- if(R('ahcv'))a('Anti-VHC reactivo','Contacto con el virus de la hepatitis C: confirmar con ARN-VHC (puede ser infección activa o curada, o falso positivo). Informar al médico.');
- if((H('ast')||H('alt'))&&(R('hbsag')||R('ahcv')))a('Hepatitis viral probable','Transaminasas elevadas con serología reactiva: valorar hepatitis B o C activa y su repercusión hepática.');
- if(R('hcg'))a('β-hCG positiva: posible embarazo','Informar de inmediato al equipo quirúrgico y de anestesia: puede cambiar la indicación, la técnica anestésica, los estudios por imagen y los fármacos. Confirmar con β-hCG cuantitativa y ecografía según corresponda.');
- if(v('rh')===1)a('Rh negativo','Registrar en la historia clínica: relevante para transfusión (preferir sangre Rh negativa) y, en mujeres en edad fértil, para la sensibilización Rh.');
+ if(H('ast')||H('alt')){const r=v('ast')/v('alt');a('Patrón hepatocelular',(r>2?'TGO/TGP >2 ('+r.toFixed(1)+'): sugiere hepatopatía alcohólica o daño avanzado; considerar también músculo o corazón. ':H('alt')?'Predomio de TGP: considerar hepatitis viral, esteatosis (MASLD), fármacos o autoinmunidad. ':'TGO elevada aislada: considerar también músculo, corazón o hemólisis. ')+'Revisar alcohol y medicación hepatotóxica.')}
+ if(H('fa')&&(H('bil')||H('bild')))a('Patrón colestásico','FA y bilirrubina elevadas: obstrucción biliar (litiasis, tumor) o colestasis intrahepática. Valorar dolor, ictericia, acolia y coluria; la ecografía queda a criterio médico.');
+ if((H('ast')||H('alt')||H('bil'))&&(L('tp')||H('inr')))a('Posible disfunción hepática con repercusión en la síntesis','Transaminasas o bilirrubina alteradas junto con coagulación alterada: riesgo quirúrgico aumentado; valorar hepatopatía y su estadio con el médico.');
+ if(H('col'))a('Colesterol elevado','Factor de riesgo cardiovascular; en el prequirúrgico es un dato informativo para el equipo.');
  if(H('tsh'))a('TSH elevada','Posible hipotiroidismo: si es marcado, aumenta el riesgo anestésico (hipotermia, bradicardia, hipotensión, íleo). Solicitar T4 libre y valorar con anestesia.');
  if(L('tsh'))a('TSH suprimida','Posible hipertiroidismo: riesgo de taquiarritmias y crisis tirotóxica perioperatoria. Solicitar T4 libre/T3 y control previo a una cirugía electiva.');
+ if(S.hcg==='d')a('β-hCG en rango dudoso','Puede corresponder a un embarazo muy incipiente, a un falso positivo o a otra causa. Informar al equipo quirúrgico y de anestesia; repetir en 48–72 h y confirmar con ecografía según criterio médico.');
+ if(R('hcg'))a('β-hCG positiva: posible embarazo','Informar de inmediato al equipo quirúrgico y de anestesia: puede cambiar la indicación, la técnica anestésica, los estudios por imagen y los fármacos. Confirmar con ecografía según corresponda.');
+ if(R('hiv'))a('HIV reactivo','Es una prueba de tamizaje: requiere confirmación (prueba complementaria y carga viral). Mantener la confidencialidad, aplicar precauciones estándar y comunicar con asesoramiento adecuado.');
  return I}
-function analyze(){const E=P.filter(p=>st.vals[p[0]]!=null).map(p=>({p,v:st.vals[p[0]],c:clf(p,st.vals[p[0]])})),S={};E.forEach(e=>S[e.p[0]]=e.c);return{E,I:insights(S)}}
+function analyze(){const E=P.filter(p=>vis(p)&&st.vals[p[0]]!=null).map(p=>({p,v:st.vals[p[0]],c:clf(p,st.vals[p[0]])})),S={};E.forEach(e=>S[e.p[0]]=e.c);return{E,I:insights(S)}}
 const isA=e=>e.c[0]==='c'||e.c==='a';
 function renderA(){const{E,I}=analyze(),el=$('#t1');
  if(!E.length){el.innerHTML='<div class="card">Ingresa al menos un resultado en la pestaña Datos para ver el análisis.</div>';return}
@@ -209,7 +211,7 @@ function renderA(){const{E,I}=analyze(),el=$('#t1');
  el.innerHTML=h}
 function reportText(){const{E,I}=analyze();if(!E.length)return'Aún no hay resultados. Ingresa valores en la pestaña Datos.';
  const cr=E.filter(isA),ab=E.filter(e=>e.c!=='n'&&e.c!=='i'),inf=E.filter(e=>e.c==='i'),L=[];
- L.push('INFORME PREQUIRÚRGICO DE LABORATORIO (ORIENTATIVO)','Código: '+($('#cod').value||'sin código')+' · Sexo: '+st.sex+' · Edad: '+($('#age').value||'—'),new Date().toLocaleString('es-AR'),'','RESUMEN',E.length+' parámetros: '+E.filter(e=>e.c==='n').length+' normales, '+ab.length+' alterados, '+cr.length+' con alerta.');
+ L.push('INFORME PREQUIRÚRGICO DE LABORATORIO (ORIENTATIVO)','Código: '+($('#cod').value||'sin código')+' · Sexo: '+st.sex+' · Edad: '+($('#age').value||'—'),new Date().toLocaleString('es-AR'),'','RESUMEN',...(Object.keys(CFG.ov).length?['(Rangos de referencia personalizados por el usuario)']:[]),E.length+' parámetros: '+E.filter(e=>e.c==='n').length+' normales, '+ab.length+' alterados, '+cr.length+' con alerta.');
  if(inf.length)L.push(inf.map(e=>e.p[1]+': '+val(e)).join(' · '));
  if(cr.length)L.push('','ALERTAS',...cr.map(e=>'! '+e.p[1]+' '+val(e)+' ('+lab(e)+')'));
  if(ab.length)L.push('','HALLAZGOS',...ab.map(e=>'• '+e.p[1]+' '+val(e)+' ('+(e.p[8]?'':'ref. ')+rng(e.p)+'): '+lab(e)+'. '+(info(e)[0]||'')));
@@ -218,12 +220,25 @@ function reportText(){const{E,I}=analyze();if(!E.length)return'Aún no hay resul
  const seen=new Set();ab.forEach(e=>{const t=info(e)[2];if(t&&!seen.has(t)){seen.add(t);L.push('• '+e.p[1]+' (enfermería): '+t)}});
  L.push('','Herramienta educativa de apoyo. No emite autorización ni contraindicación quirúrgica ni sustituye el juicio clínico.');return L.join('\n')}
 
+let cs=0;
+const cfRow=p=>{const l=p[8]?null:lim(p,cs);return`<div class="cfr"><label class="ck"><input type="checkbox" data-cv="${p[0]}" ${vis(p)?'checked':''}><b>${p[1]}</b>&nbsp;<span class="mu">${p[2]}</span></label>${l?`<div class="cf">${(p[9]==='r'?[['hi','Negativo si <',l.hi],['ch','Positivo si >',l.ch]]:[['lo','Mín',l.lo],['hi','Máx',l.hi],['cl','Crít. ↓',l.cl],['ch','Crít. ↑',l.ch]]).map(([k,t,v])=>`<label>${t}<input inputmode="decimal" data-id="${p[0]}" data-k="${k}" value="${v==null?'':v}"></label>`).join('')}</div>`:'<small class="mu">Resultado cualitativo: sin rangos numéricos.</small>'}</div>`};
+function renderCfg(){$('#t3').innerHTML=`<div class="card"><h2>Ajustes</h2><p class="mu">Elige los parámetros que usas y ajusta los rangos a los de tu laboratorio. Esta configuración se guarda en este dispositivo; los resultados de pacientes no se guardan. Los valores críticos vacíos se desactivan.</p><div class="seg" role="group" aria-label="Sexo de los rangos"><button data-cs="0" aria-pressed="${cs===0}">Rangos de varón</button><button data-cs="1" aria-pressed="${cs===1}">Rangos de mujer</button></div><button class="btn" data-cf="all">Mostrar todos</button><button class="btn" data-cf="none">Ocultar todos</button><button class="btn" data-cf="reset">Restablecer rangos</button><div id="cfm" class="mu"></div></div>`+G.map((g,i)=>`<div class="card"><h3>${g}</h3>${P.filter(p=>p[3]===i).map(cfRow).join('')}</div>`).join('')}
+$('#t3').addEventListener('click',e=>{const b=e.target.closest('[data-cs],[data-cf]');if(!b)return;if(b.dataset.cs!=null){cs=+b.dataset.cs;renderCfg();return}
+ const a=b.dataset.cf;if(a==='reset'){if(!confirm('¿Restablecer todos los rangos a los valores predeterminados?'))return;CFG.ov={}}else P.forEach(p=>CFG.hid[p[0]]=a==='none'?1:0);saveCfg();renderCfg();drawRows()});
+$('#t3').addEventListener('change',e=>{const t=e.target;if(t.dataset.cv){CFG.hid[t.dataset.cv]=t.checked?0:1;saveCfg();drawRows();return}
+ if(!t.dataset.k)return;const p=PM[t.dataset.id],k=t.dataset.k,s=t.value.trim().replace(',','.'),v=s===''?null:parseFloat(s);
+ if(s!==''&&!isFinite(v)){t.classList.add('bad');return}
+ const o=CFG.ov[p[0]]||{lo:[0,1].map(i=>pickI(p[4],i)),hi:[0,1].map(i=>pickI(p[5],i)),cl:[nn(p[6]),nn(p[6])],ch:[nn(p[7]),nn(p[7])]},old=o[k].slice();
+ o[k][cs]=v;
+ const l={lo:o.lo[cs],hi:o.hi[cs],cl:o.cl[cs],ch:o.ch[cs]};
+ if(l.lo==null||l.hi==null||l.lo>=l.hi||(l.cl!=null&&l.cl>l.lo)||(l.ch!=null&&l.ch<l.hi)){o[k]=old;t.classList.add('bad');$('#cfm').textContent='Valor no válido: debe cumplirse crítico bajo ≤ mínimo < máximo ≤ crítico alto.';t.value=old[cs]==null?'':old[cs];return}
+ t.classList.remove('bad');$('#cfm').textContent='Guardado.';CFG.ov[p[0]]=o;saveCfg();upd()});
 function tab(i){$$('section').forEach((s,j)=>s.hidden=j!=i);$$('nav button').forEach(b=>b.setAttribute('aria-selected',b.dataset.t==i));
- if(i==1)renderA();if(i==2)$('#rep').textContent=reportText();scrollTo(0,0)}
+ if(i==1)renderA();if(i==2)$('#rep').textContent=reportText();if(i==3)renderCfg();scrollTo(0,0)}
 $$('nav button').forEach(b=>b.onclick=()=>tab(+b.dataset.t));$('#go').onclick=()=>tab(1);
 $('#cp').onclick=async()=>{try{await navigator.clipboard.writeText(reportText());$('#cp').textContent='Copiado'}catch(e){alert('No se pudo copiar; selecciona el texto manualmente.')}};
 $('#sh').onclick=()=>navigator.share?navigator.share({title:'Informe prequirúrgico',text:reportText()}).catch(()=>{}):$('#cp').click();
 $('#pr').onclick=()=>print();
-upd();
+drawRows();
 if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js');
 </script></body></html>
